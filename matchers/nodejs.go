@@ -1,8 +1,6 @@
-package main
+package matchers
 
 import (
-	"encoding/json"
-	"fmt"
 	"regexp"
 	"strings"
 )
@@ -29,7 +27,7 @@ func FindNodeJSModelsInFile(content string) ([]NodeJSModel, error) {
 	for _, pattern := range patterns {
 		matches := pattern.FindAllStringSubmatch(content, -1)
 		for _, match := range matches {
-			model := NodeJSModel{Name: match[2], Parameters: extractParameters(content)}
+			model := NodeJSModel{Name: match[2], Parameters: extractNodeJSParameters(content)}
 			models = append(models, model)
 		}
 	}
@@ -38,7 +36,7 @@ func FindNodeJSModelsInFile(content string) ([]NodeJSModel, error) {
 }
 
 // extractParameters extracts parameter names from constructor
-func extractParameters(content string) []string {
+func extractNodeJSParameters(content string) []string {
 	var parameters []string
 
 	// Pattern to extract parameter names from constructor
@@ -55,32 +53,4 @@ func extractParameters(content string) []string {
 	}
 
 	return parameters
-}
-
-func main() {
-	// Example usage
-	nodeJSContent := `
-const mongoose = require('mongoose');
-
-const userSchema = new mongoose.Schema({
-    username: { type: String, required: true },
-    email: { type: String, required: true }
-});
-
-const User = mongoose.model('User', userSchema);
-`
-
-	models, err := FindNodeJSModelsInFile(nodeJSContent)
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
-
-	jsonData, err := json.MarshalIndent(models, "", "    ")
-	if err != nil {
-		fmt.Println("Error marshalling JSON:", err)
-		return
-	}
-
-	fmt.Println(string(jsonData))
 }

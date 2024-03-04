@@ -1,8 +1,6 @@
-package main
+package matchers
 
 import (
-	"encoding/json"
-	"fmt"
 	"regexp"
 	"strings"
 )
@@ -35,7 +33,7 @@ func FindPythonModelsInFile(content string) ([]PythonModel, error) {
 	for _, pattern := range patterns {
 		matches := pattern.FindAllStringSubmatch(content, -1)
 		for _, match := range matches {
-			model := PythonModel{Name: match[1], Parameters: extractParameters(content)}
+			model := PythonModel{Name: match[1], Parameters: extractPythonParameters(content)}
 			models = append(models, model)
 		}
 	}
@@ -44,7 +42,7 @@ func FindPythonModelsInFile(content string) ([]PythonModel, error) {
 }
 
 // extractParameters extracts parameter names from class declaration
-func extractParameters(content string) []string {
+func extractPythonParameters(content string) []string {
 	var parameters []string
 
 	// Pattern to extract parameter names from class declaration
@@ -63,31 +61,3 @@ func extractParameters(content string) []string {
 	return parameters
 }
 
-func main() {
-	// Example usage
-	pythonContent := `
-from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
-
-class User(db.Model):
-    __tablename__ = 'users'
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-`
-
-	models, err := FindPythonModelsInFile(pythonContent)
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
-
-	jsonData, err := json.MarshalIndent(models, "", "    ")
-	if err != nil {
-		fmt.Println("Error marshalling JSON:", err)
-		return
-	}
-
-	fmt.Println(string(jsonData))
-}

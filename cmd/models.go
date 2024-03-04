@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"matchers/detect"
+	"github.com/dunkdunk/oko-cli/matchers"
 
 	"github.com/spf13/cobra"
 )
@@ -56,11 +56,12 @@ func walk(path string) error {
 
 			// Match patterns
 			// Pass the file content and extension to the DetectModels function
-			detectedModel, err := DetectModels(string(content), ext)
+			detectedModel, err := matchers.DetectModels(string(content), ext)
 			if err != nil {
 				return err
 			}
 			
+			fmt.Println(detectedModel)
 		}
 		
 		return nil

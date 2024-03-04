@@ -1,8 +1,6 @@
-package main
+package matchers
 
 import (
-	"encoding/json"
-	"fmt"
 	"regexp"
 	"strings"
 )
@@ -59,7 +57,7 @@ func FindRubyModelsInFile(content string) ([]RubyModel, error) {
 	for _, pattern := range patterns {
 		matches := pattern.FindAllStringSubmatch(content, -1)
 		for _, match := range matches {
-			model := RubyModel{Name: match[1], Parameters: extractParameters(content)}
+			model := RubyModel{Name: match[1], Parameters: extractRubyParameters(content)}
 			models = append(models, model)
 		}
 	}
@@ -68,7 +66,7 @@ func FindRubyModelsInFile(content string) ([]RubyModel, error) {
 }
 
 // extractParameters extracts parameter names from class declaration
-func extractParameters(content string) []string {
+func extractRubyParameters(content string) []string {
 	var parameters []string
 
 	// Pattern to extract parameter names from class declaration
@@ -88,30 +86,4 @@ func extractParameters(content string) []string {
 	}
 
 	return parameters
-}
-
-func main() {
-	// Example usage
-	rubyContent := `
-class User < ApplicationRecord
-  attr_reader :name, :email
-end
-
-class Product < ActiveRecord::Base
-  attr_accessor :name, :price
-end
-`
-	models, err := FindRubyModelsInFile(rubyContent)
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
-
-	jsonData, err := json.MarshalIndent(models, "", "    ")
-	if err != nil {
-		fmt.Println("Error marshalling JSON:", err)
-		return
-	}
-
-	fmt.Println(string(jsonData))
 }

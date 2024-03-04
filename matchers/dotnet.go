@@ -1,8 +1,6 @@
-package main
+package matchers
 
 import (
-	"encoding/json"
-	"fmt"
 	"regexp"
 	"strings"
 )
@@ -29,7 +27,7 @@ func FindDotNetModelsInFile(content string) ([]DotNetModel, error) {
 	for _, pattern := range patterns {
 		matches := pattern.FindAllStringSubmatch(content, -1)
 		for _, match := range matches {
-			model := DotNetModel{Name: match[1], Parameters: extractParameters(content)}
+			model := DotNetModel{Name: match[1], Parameters: extractDotNetParameters(content)}
 			models = append(models, model)
 		}
 	}
@@ -38,7 +36,7 @@ func FindDotNetModelsInFile(content string) ([]DotNetModel, error) {
 }
 
 // extractParameters extracts parameter names from constructor
-func extractParameters(content string) []string {
+func extractDotNetParameters(content string) []string {
 	var parameters []string
 
 	// Pattern to extract parameter names from constructor
@@ -57,37 +55,3 @@ func extractParameters(content string) []string {
 	return parameters
 }
 
-func main() {
-	// Example usage
-	dotNetContent := `
-using System;
-
-public class User
-{
-    public int Id { get; set; }
-    public string Username { get; set; }
-    public string Email { get; set; }
-
-    public User(int id, string username, string email)
-    {
-        Id = id;
-        Username = username;
-        Email = email;
-    }
-}
-`
-
-	models, err := FindDotNetModelsInFile(dotNetContent)
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
-	}
-
-	jsonData, err := json.MarshalIndent(models, "", "    ")
-	if err != nil {
-		fmt.Println("Error marshalling JSON:", err)
-		return
-	}
-
-	fmt.Println(string(jsonData))
-}

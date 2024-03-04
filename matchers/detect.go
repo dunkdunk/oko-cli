@@ -1,4 +1,4 @@
-package main
+package matchers
 
 import (
 	"errors"
