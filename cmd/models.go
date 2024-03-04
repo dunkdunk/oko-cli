@@ -1,12 +1,11 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"regexp"
+	"matchers/detect"
 
 	"github.com/spf13/cobra"
 )
@@ -41,21 +40,6 @@ func init() {
 }
 
 func walk(path string) error {
-	// Read patterns from JSON file
-	patternsFile, err := os.Open("./lib/patterns/data-models.json")
-	if err != nil {
-		fmt.Println("Error opening patterns file:", err)
-		return err
-	}
-	defer patternsFile.Close()
-
-	var patterns map[string]string
-	err = json.NewDecoder(patternsFile).Decode(&patterns)
-	if err != nil {
-		fmt.Println("Error decoding patterns:", err)
-		return err
-	}
-
 	return filepath.Walk(path, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -64,12 +48,6 @@ func walk(path string) error {
 			// Determine the file extension
 			ext := filepath.Ext(path)
 
-			// Check if a pattern exists for the file extension
-			pattern, ok := patterns[ext]
-			if !ok {
-				return nil // Skip files with unsupported extensions
-			}
-
 			// Read the file content
 			content, err := ioutil.ReadFile(path)
 			if err != nil {
@@ -77,11 +55,12 @@ func walk(path string) error {
 			}
 
 			// Match patterns
-			re := regexp.MustCompile(pattern)
-			matches := re.FindAllStringSubmatch(string(content), -1)
-			for _, match := range matches {
-				fmt.Printf("Found data model in %s: %s\n", path, match[1])
+			// Pass the file content and extension to the DetectModels function
+			detectedModel, err := DetectModels(string(content), ext)
+			if err != nil {
+				return err
 			}
+			
 		}
 		
 		return nil
